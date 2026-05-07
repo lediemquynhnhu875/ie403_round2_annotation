@@ -1,0 +1,29 @@
+# CẤU HÌNH MODEL
+model:
+  path: "OpenGVLab/InternVL3_5-8B"
+  load_in_4bit: true          # Bật để chạy được trên GPU T4 Kaggle
+  trust_remote_code: true
+  device: "cuda"
+
+# THÔNG SỐ INFERENCE
+inference:
+  temperature: 0.0            # Để 0.0 để kết quả gán nhãn nhất quán, không ngẫu nhiên
+  max_new_tokens: 512
+  do_sample: false
+  batch_size: 4               # Tùy chỉnh theo VRAM (T4 16GB nên để 4-8)
+
+# ĐƯỜNG DẪN DỮ LIỆU
+data:
+  input_path: "/kaggle/input/datasets/nhatvu205/sacasm-dataset-uit/silver/round-2-sample-data/50-samples-round-2.json" 
+  image_dir: "/kaggle/input/visomd-data/images/"   # Đường dẫn mount dataset trên Kaggle
+  output_dir: "outputs/round2/"
+
+# LOGIC GÁN NHÃN (ROUTING)
+routing:
+  # Nếu LLM không chắc chắn hoặc tự tin thấp, đưa vào hàng đợi Human Review
+  min_confidence: 0.7 
+  # Tỉ lệ mẫu được gán tự động nhưng vẫn gửi đi Audit (kiểm tra chéo)
+  random_audit_rate: 0.1 
+
+# PHIÊN BẢN PROMPT
+prompt_version: "fine_grained_v2"
