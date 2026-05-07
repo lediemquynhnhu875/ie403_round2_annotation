@@ -1,28 +1,33 @@
 # CẤU HÌNH MODEL
 model:
   path: "OpenGVLab/InternVL3_5-8B"
-  load_in_4bit: true          # Bật để chạy được trên GPU T4 Kaggle
+  load_in_4bit: true          # Bắt buộc để chạy trên T4 (16GB VRAM)
   trust_remote_code: true
   device: "cuda"
+  use_flash_attn: false       # Tắt để tránh lỗi build wheel "treo" máy
 
 # THÔNG SỐ INFERENCE
 inference:
-  temperature: 0.0            # Để 0.0 để kết quả gán nhãn nhất quán, không ngẫu nhiên
-  max_new_tokens: 512
+  temperature: 0.0            # Đảm bảo tính nhất quán (deterministic) cho nhãn silver
+  max_new_tokens: 1024        # Tăng lên để LLM có đủ chỗ viết Reasoning 4 bước
   do_sample: false
-  batch_size: 4               # Tùy chỉnh theo VRAM (T4 16GB nên để 4-8)
+  batch_size: 1               # Giảm xuống 1 để cực kỳ an toàn cho VRAM, tránh crash giữa chừng
 
-# ĐƯỜNG DẪN DỮ LIỆU
+# ĐƯỜNG DẪN DỮ LIỆU (SỬ DỤNG ĐƯỜNG DẪN TUYỆT ĐỐI)
 data:
-  input_path: "/kaggle/input/datasets/nhatvu205/sacasm-dataset-uit/silver/round-2-sample-data/50-samples-round-2.json" 
-  image_dir: "/kaggle/input/visomd-data/images/"   # Đường dẫn mount dataset trên Kaggle
-  output_dir: "outputs/round2/"
+  # Đường dẫn file input gốc (đã link vào folder dự án)
+  input_path: "/kaggle/working/ViSomd-Project/data/data.json" 
+  
+  # Đường dẫn folder chứa ảnh (Trỏ thẳng vào Dataset mount của Kaggle)
+  # Lưu ý: Kiểm tra chính xác tên folder "visomd-data" trong tab Input
+  image_dir: "/kaggle/input/visomd-data/images/"   
+  
+  # Nơi lưu kết quả
+  output_dir: "/kaggle/working/ViSomd-Project/outputs/round2/"
 
 # LOGIC GÁN NHÃN (ROUTING)
 routing:
-  # Nếu LLM không chắc chắn hoặc tự tin thấp, đưa vào hàng đợi Human Review
   min_confidence: 0.7 
-  # Tỉ lệ mẫu được gán tự động nhưng vẫn gửi đi Audit (kiểm tra chéo)
   random_audit_rate: 0.1 
 
 # PHIÊN BẢN PROMPT
